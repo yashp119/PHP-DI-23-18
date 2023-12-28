@@ -14,7 +14,7 @@ pipeline {
                 script {
                     sh "zip -r ${BuildName}.zip ${env.WORKSPACE} ."
                     sh "aws s3 cp ${BuildName}.zip s3://${BucketName} --region us-east-1"
-                    sh "rm ${BuildName}.zip"
+                    sh "rm -rf ./*"
                 }
             }
         }
