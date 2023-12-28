@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh "zip -j ${BuildName}.zip ${env.WORKSPACE}/."
+                    sh "zip -r ${BuildName}.zip ${env.WORKSPACE}/."
                     sh "aws s3 cp ${BuildName}.zip s3://${BucketName} --region us-east-1"
                     sh "rm ${BuildName}.zip"
                 }
