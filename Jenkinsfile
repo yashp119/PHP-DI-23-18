@@ -55,14 +55,20 @@ pipeline {
 
                     // Remove excess versions and corresponding artifacts from S3
                     for (int i = versionsToKeep; i < versions.size(); i++) {
+                        // Print information for debugging
+                        echo "Deleting version: ${versions[i]}"
+
                         // Delete the application version from Elastic Beanstalk
                         sh "aws elasticbeanstalk delete-application-version --application-name ${ApplicationName} --version-label ${versions[i]} --region us-east-1"
 
                         // Delete the corresponding artifact from S3
                         sh "aws s3 rm s3://${BUCKET_NAME}/${versions[i]}.zip --region us-east-1"
-                        
+
                         // If versioning is enabled, delete all versions of the object in S3
                         sh "aws s3api delete-object --bucket ${BUCKET_NAME} --key ${versions[i]}.zip --region us-east-1"
+
+                        // Print information for debugging
+                        echo "Deleted version: ${versions[i]}"
                     }
                 }
             }
