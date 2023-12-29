@@ -45,7 +45,7 @@ pipeline {
             steps {
                 script {
                     // Specify the number of versions to keep
-                    def versionsToKeep = 2
+                    def versionsToKeep = 3
 
                     // Get the list of application versions
                     def versions = sh(script: "aws elasticbeanstalk describe-application-versions --application-name ${ApplicationName} --region us-east-1 --query 'ApplicationVersions[*].VersionLabel' --output text", returnStdout: true).trim().split()
