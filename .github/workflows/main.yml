@@ -42,10 +42,16 @@ jobs:
 
       - name: Fetch SonarQube Issues
         run: |
-          curl -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" \
+          ISSUES_JSON=$(curl -s -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" \
             -H "Accept: application/json" \
-            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=${{ github.repository }}&resolved=false" \
-            -o sonarqube-issues.json
+            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=${{ github.repository }}&resolved=false")
+
+          echo "${ISSUES_JSON}" > sonarqube-issues.json
+
+      - name: Process SonarQube Issues
+        run: |
+          ISSUES_KEY=$(cat sonarqube-issues.json | jq -r .componentKeys[0])
+          echo "SonarQube Issues Key: $ISSUES_KEY"
 
       - name: Send SonarQube Report via Email
         uses: dawidd6/action-send-mail@v2
