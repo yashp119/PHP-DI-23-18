@@ -1,8 +1,3 @@
-html-format
-
-
-
-
 name: Build, SonarQube Scan, and Email
 
 on:
@@ -18,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -48,27 +43,33 @@ jobs:
       - name: Fetch SonarQube Issues
         run: |
           curl -u "${{ secrets.SONAR_TOKEN }}:" \
-            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=testing-sonar&resolved=false" \
+            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=${{ github.repository }}&resolved=false" \
             -o sonarqube-issues.json
 
-      - name: Convert SonarQube JSON to HTML
+          if [ "$(jq '.errors' sonarqube-issues.json)" != "null" ]; then
+            echo "Error in SonarQube API response:"
+            cat sonarqube-issues.json
+            exit 1
+          fi
+
+      - name: Debug SonarQube JSON
+        run: cat sonarqube-issues.json
+
+      - name: Process SonarQube Issues
         run: |
-          cat sonarqube-issues.json | jq -r '["Key", "Rule", "Severity", "Component", "Project"], (.issues[] | [.key, .rule, .severity, .component, .project]) | @csv' > sonarqube-issues.csv
-          sed -i 's/,/<\/td><td>/g; s/^/<tr><td>/; s/$/<\/td><\/tr>/' sonarqube-issues.csv
-          echo '<table border="1">' > sonarqube-issues.html
-          cat sonarqube-issues.csv >> sonarqube-issues.html
-          echo '</table>' >> sonarqube-issues.html
+          ISSUES_KEY=$(grep -oP '"component":"\K[^"]+' sonarqube-issues.json | awk 'NR==1{print $1; exit}')
+          echo "SonarQube Issues Key: $ISSUES_KEY"
 
       - name: Send SonarQube Report via Email
         uses: dawidd6/action-send-mail@v2
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: yashpareek.amy119@gmail.com
-          password: seoa fhxg bmcg edqj
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
           subject: SonarQube Report
-          body: sonarqube-issues.html
-          to: yashpareek.amy119@gmail.com
-          from: yashpareek.amy119@gmail.com
-          attachments: sonarqube-issues.html
-          content_type: text/html
+          body: email-body.txt
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_FROM }}
+          attachments: sonarqube-issues.json
+          content_type: application/json
