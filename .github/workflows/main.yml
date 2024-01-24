@@ -43,7 +43,8 @@ jobs:
       - name: Fetch SonarQube Issues
         run: |
           curl -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" \
-            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentRoots=${{ github.repository }}&resolved=false" \
+            -H "Accept: application/json" \
+            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=${{ github.repository }}&resolved=false" \
             -o sonarqube-issues.json
 
       - name: Send SonarQube Report via Email
