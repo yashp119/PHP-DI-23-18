@@ -1,4 +1,5 @@
 name: Build, SonarQube Scan, and Email
+
 on:
   push:
     branches:
@@ -41,8 +42,8 @@ jobs:
 
       - name: Fetch SonarQube Issues
         run: |
-          curl -u "${{ secrets.SONAR_TOKEN }}:" \
-            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=testing-sonar&resolved=false" \
+          curl -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" \
+            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=${{ github.repository }}&resolved=false" \
             -o sonarqube-issues.json
 
       - name: Send SonarQube Report via Email
