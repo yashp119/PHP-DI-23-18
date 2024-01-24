@@ -53,7 +53,7 @@ jobs:
 
       - name: Process SonarQube Issues
         run: |
-          ISSUES_KEY=$(jq -r '.components[0].key' sonarqube-issues.json)
+          ISSUES_KEY=$(jq -r '.issues[0].component' sonarqube-issues.json)
           echo "SonarQube Issues Key: $ISSUES_KEY"
 
       - name: Send SonarQube Report via Email
